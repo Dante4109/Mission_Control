@@ -1,0 +1,42 @@
+{
+  "agentOperations": {
+    "name": "Default Agent Configuration",
+    "description": "Base configuration for agent operations across the workspace",
+    "version": "1.0",
+    "settings": {
+      "defaultAgentType": "explore",
+      "enableLogging": true,
+      "logLevel": "info",
+      "outputFormat": "json",
+      "preserveOutputs": true
+    },
+    "toolPreferences": {
+      "preferParallelCalls": true,
+      "useGrepForSearch": true,
+      "useGlobForFileMatching": true,
+      "enableSqlTracking": false
+    },
+    "workspaceMappings": [
+      {
+        "folderPattern": "**/src/**",
+        "agentType": "code-review",
+        "description": "Use code-review agent for source code"
+      },
+      {
+        "folderPattern": "**/test/**",
+        "agentType": "task",
+        "description": "Use task agent for test execution"
+      },
+      {
+        "folderPattern": "**/docs/**",
+        "agentType": "explore",
+        "description": "Use explore agent for documentation analysis"
+      }
+    ],
+    "promptTemplates": {
+      "codeReview": "prompts/code-review-prompt.md",
+      "exploration": "prompts/exploration-prompt.md",
+      "taskExecution": "prompts/task-prompt.md"
+    }
+  }
+}

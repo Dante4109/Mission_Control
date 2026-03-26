@@ -1,0 +1,17 @@
+# Outputs should not be committed
+outputs/**/*.log
+outputs/**/*.json
+outputs/**/*.txt
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# But keep the folder structure
+!outputs/.gitkeep
+!outputs/*/.gitkeep

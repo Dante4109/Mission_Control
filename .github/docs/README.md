@@ -27,6 +27,7 @@ This folder serves as the master control center for running GitHub Copilot agent
 ```
 
 **Parameters:**
+
 - `TargetPath`: Full path to the target folder to analyze/process
 - `AgentType`: Type of agent (explore, task, code-review, general-purpose)
 - `Prompt`: Instruction prompt file from `prompts/` folder (optional)
@@ -49,6 +50,7 @@ This folder serves as the master control center for running GitHub Copilot agent
 ## Configuration
 
 Place workspace/project-specific agent configurations in `config/`. Each config can define:
+
 - Default agent type for a target folder
 - Prompts to use from `prompts/` folder
 - Output templates to use from `templates/` folder

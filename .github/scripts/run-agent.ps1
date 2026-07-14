@@ -1,11 +1,12 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Run a GitHub Copilot agent against a target folder
+    Run an AI agent against a target folder (Claude Code or GitHub Copilot)
 
 .DESCRIPTION
-    Execute an agent operation (explore, task, code-review, general-purpose) 
+    Execute an agent operation (explore, task, code-review, general-purpose)
     against any folder in the workspace with optional configuration.
+    Defaults to Claude Code; pass -Provider Copilot to use GitHub Copilot.
 
 .PARAMETER TargetPath
     Full or relative path to the target folder to analyze/process
@@ -25,11 +26,17 @@
 .PARAMETER CustomPrompt
     Custom instruction/prompt for the agent (optional)
 
+.PARAMETER Provider
+    AI provider to use: ClaudeCode (default) or Copilot
+
 .EXAMPLE
     .\run-agent.ps1 -TargetPath "C:\projects\MyProject" -AgentType explore
-    
+
 .EXAMPLE
     .\run-agent.ps1 -TargetPath "." -AgentType code-review -Prompt code-review-prompt.md -OutputTemplate json-output
+
+.EXAMPLE
+    .\run-agent.ps1 -TargetPath "." -AgentType explore -CustomPrompt "List all API endpoints" -Provider Copilot
 #>
 
 param(
@@ -50,7 +57,11 @@ param(
     [string]$OutputTemplate,
     
     [Parameter(Mandatory=$false)]
-    [string]$CustomPrompt
+    [string]$CustomPrompt,
+
+    [Parameter(Mandatory=$false)]
+    [ValidateSet('ClaudeCode', 'Copilot')]
+    [string]$Provider = 'ClaudeCode'
 )
 
 $ErrorActionPreference = "Stop"
@@ -132,7 +143,7 @@ $ExecutionSummary | Add-Content $LogFile
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════"
-Write-Host "GitHub Copilot Agent Operation"
+Write-Host "Agent Operation  [$Provider]"
 Write-Host "═══════════════════════════════════════════════════════════"
 Write-Host "Agent Type:       $AgentType"
 Write-Host "Target Path:      $($ResolvedTargetPath.Path)"
@@ -143,13 +154,26 @@ Write-Host "Log File:         $LogFile"
 Write-Host "═══════════════════════════════════════════════════════════"
 Write-Host ""
 
-# TODO: Integration with actual Copilot API
-Write-Host "⚠ Note: This script is a template for agent execution."
-Write-Host "   To use with actual Copilot agents, integrate with your Copilot CLI setup."
+$FullPrompt = if ($CustomPrompt) { $CustomPrompt } elseif ($PromptContent) { $PromptContent } else { "Analyze: $($ResolvedTargetPath.Path)" }
+
+switch ($Provider) {
+    'ClaudeCode' {
+        $ClaudeAgentType = switch ($AgentType) {
+            'explore'          { 'Explore' }
+            'task'             { 'general-purpose' }
+            'code-review'      { 'general-purpose' }
+            'general-purpose'  { 'general-purpose' }
+        }
+        Write-Host "Running Claude Code agent ($ClaudeAgentType)..."
+        Write-Host ""
+        claude --agent-type $ClaudeAgentType --print $FullPrompt 2>&1 | Tee-Object -FilePath $LogFile
+    }
+    'Copilot' {
+        Write-Host "Running Copilot agent ($AgentType)..."
+        Write-Host "⚠ Copilot integration: connect to 'gh copilot' CLI here."
+        "Prompt: $FullPrompt" | Add-Content $LogFile
+    }
+}
 Write-Host ""
-Write-Host "Next Steps:"
-Write-Host "  1. Create prompts in: $PromptDir"
-Write-Host "  2. Define output templates in: $TemplateDir"
-Write-Host "  3. Configure settings in: $ConfigDir"
-Write-Host "  4. Results will be saved to: $OutputDir"
+Write-Host "✓ Results saved to: $LogFile"
 Write-Host ""

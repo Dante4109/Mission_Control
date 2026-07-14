@@ -6,7 +6,7 @@ Master workspace and command center for managing multiple projects in daily deve
 
 **Mission Control** serves as the central hub for coordinating development across multiple projects in your workspace. It provides:
 
-- **Unified agent orchestration** - Run GitHub Copilot agents against any project
+- **Unified agent orchestration** - Run Claude Code or GitHub Copilot agents against any project
 - **Centralized configuration** - Manage settings, prompts, and templates in one place
 - **Automation framework** - Pre-built scripts and templates for common development tasks
 - **Issue tracking** - BDD-based issue creation with auto-generated acceptance criteria
@@ -16,9 +16,13 @@ Master workspace and command center for managing multiple projects in daily deve
 
 ### `.github/agents/`
 
-Custom GitHub Copilot agents for specialized tasks:
+Canonical agent definitions (`*.agent.md`) — the single source of truth. Edit these to update agents for both providers.
 
 - **github-issue-creator** - Transform user stories into BDD-formatted GitHub issues with auto-generated test scenarios
+
+### `.claude/agents/`
+
+Auto-generated Claude Code agent files. Do not edit directly — run `Sync-Agents.ps1` after modifying `.github/agents/`.
 
 ### `.github/config/`
 
@@ -62,9 +66,44 @@ Agent execution logs and results (organized by agent type):
 ### Run an Agent Against a Project
 
 ```powershell
-# From Mission_Control directory
+# Claude Code (default)
 .\.github\scripts\run-agent.ps1 -TargetPath "C:\projects\AppDev\MyProject" -AgentType explore
+
+# GitHub Copilot
+.\.github\scripts\run-agent.ps1 -TargetPath "C:\projects\AppDev\MyProject" -AgentType explore -Provider Copilot
 ```
+
+### Sync Agents After Editing
+
+After adding or modifying a `*.agent.md` file, regenerate the Claude Code format:
+
+```powershell
+.\.github\scripts\Sync-Agents.ps1 -Force
+```
+
+### Link Mission Control to a Repository
+
+From **any repository root**, link it to Mission Control to enable `/agent` slash commands:
+
+```powershell
+LinkMC
+```
+
+Or use the full name:
+```powershell
+Link-MissionControl
+```
+
+Options:
+```powershell
+Link-MissionControl -TargetRepo "C:\projects\MyProject"    # Specific repo
+Link-MissionControl -Force                                  # Overwrite existing links
+```
+
+This will:
+- ✅ Create `.github/agents/` + junction → Mission Control (Copilot)
+- ✅ Create `.claude/agents/` + junction → Mission Control (Claude Code)
+- ✅ Generate `AGENTS.md` (Copilot docs) + `CLAUDE.md` (Claude Code docs)
 
 ### Create a GitHub Issue from Requirements
 
@@ -123,16 +162,88 @@ Templates are organized by purpose:
 
 Create new files in these directories and reference them when running agents.
 
-## GitHub Copilot Integration
+## Agent Providers
 
-Mission Control is optimized for GitHub Copilot agent operations:
+Mission Control supports both Claude Code and GitHub Copilot:
 
-- **explore** - Understand codebases, analyze patterns, answer questions
-- **task** - Execute commands (builds, tests, lints, deployments)
-- **code-review** - Review code for quality, security, and best practices
-- **general-purpose** - Complex multi-step development operations
+| Agent type | Best for |
+|---|---|
+| `explore` | Understand codebases, analyze patterns, answer questions |
+| `task` | Execute commands (builds, tests, lints, deployments) |
+| `code-review` | Review code for quality, security, and best practices |
+| `general-purpose` | Complex multi-step development operations |
 
-See `.github/agents/` for specialized agent configurations.
+```powershell
+# Claude Code (default)
+Use-Agent -Type explore -Prompt "Your prompt"
+
+# GitHub Copilot
+Use-Agent -Type explore -Prompt "Your prompt" -Provider Copilot
+```
+
+See `.github/agents/` for canonical agent definitions and `.claude/agents/` for the generated Claude Code versions.
+
+## Linking Mission Control to Repositories
+
+The `LinkMC` command automatically configures any repository to use Mission Control agents.
+
+### From Any Repository Root
+
+```powershell
+LinkMC
+```
+
+### What LinkMC Does
+
+1. **Creates `.github/agents/` directory** - Standard location for agent definitions
+2. **Creates symbolic link** to Mission Control agents (`.github/agents/mission-control`)
+3. **Generates local agent definitions** for Copilot CLI discovery via `/agent`
+4. **Creates `AGENTS.md`** - Documentation of available agents
+
+### After Linking
+
+**Claude Code (default):**
+```powershell
+Use-Agent -Type explore -Prompt "Your prompt"
+```
+
+Or just describe what you want to Claude Code and it will select the right agent.
+
+**GitHub Copilot:**
+```
+/agent github-issue-creator
+Create a GitHub issue for: "Your user story"
+```
+
+### LinkMC Options
+
+```powershell
+# Link specific repository
+LinkMC -TargetRepo "C:\projects\MyProject"
+
+# Overwrite existing links
+LinkMC -Force
+
+# Use full function name
+Link-MissionControl
+```
+
+### Multiple Repositories
+
+Link Mission Control to multiple projects—they'll all share the same agents, prompts, and configurations:
+
+```powershell
+cd C:\projects\ProjectA
+LinkMC
+
+cd C:\projects\ProjectB
+LinkMC
+
+cd C:\projects\ProjectC
+LinkMC -Force  # Re-link if needed
+```
+
+Now all projects can use `/agent` and `Use-Agent` commands!
 
 ## Issue Creation Workflow
 
@@ -160,11 +271,20 @@ Acceptance Criteria:
 
 ## Best Practices
 
+- ✅ Use `LinkMC` to link all your repositories to Mission Control
 - ✅ Use `WhatIf` mode to preview agent actions before execution
 - ✅ Customize prompts for your specific workflow needs
 - ✅ Review agent outputs before committing changes
 - ✅ Keep templates organized by project type
 - ✅ Document custom configurations for team reference
+
+## Documentation
+
+For detailed information, see:
+
+- **[LINK_MISSION_CONTROL.md](./LINK_MISSION_CONTROL.md)** - Complete LinkMC guide and reference
+- **[SETUP.md](./SETUP.md)** - PowerShell profile setup
+- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Quick command cheat sheet
 
 ## Contributing
 

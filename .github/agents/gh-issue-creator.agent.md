@@ -1,6 +1,6 @@
 ﻿---
 description: "Use this agent when the user asks to create a GitHub issue with a user story. This agent wraps the Mission_Control github-issue-creator agent.\n\nTrigger phrases include:\n- 'create a GitHub issue'\n- 'generate an issue from this story'\n- 'create an issue for this user story'\n- 'turn this into a GitHub issue'\n- 'make a GitHub issue'\n- 'add this to GitHub as an issue'\n\nExamples:\n- User says 'create a GitHub issue from this markdown' → invoke this agent to parse the story and create the issue\n- User provides a text description and asks 'turn this into a GitHub issue' → invoke this agent to format as BDD and create\n- User says 'create an issue for the current repo with this user story' → invoke this agent to generate ticket number and create issue"
-name: github-issue-creator
+name: gh-issue-creator
 tools: ['shell', 'read', 'search', 'edit', 'task', 'skill', 'web_search', 'web_fetch', 'ask_user']
 ---
 
